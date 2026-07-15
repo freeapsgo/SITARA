@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistem Manajemen Berkas Kendaraan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div id="loadingOverlay"><div class="spinner"></div><div class="text-muted">Memuat...</div></div>
+<div id="toastContainer"></div>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="icon-circle"><i class="fa-solid fa-id-card"></i></div>
+      <h1>Manajemen Berkas Kendaraan</h1>
+      <p>Silakan login untuk melanjutkan</p>
+    </div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP LAYOUT ============ -->
+<div id="appLayout">
+  <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <nav id="sidebar">
+    <div class="sidebar-brand"><i class="fa-solid fa-id-card"></i> Berkas Kendaraan</div>
+    <div class="sidebar-nav">
+      <div class="sidebar-link active" data-page="dashboard" onclick="showPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> Dashboard</div>
+      <div class="sidebar-link" data-page="inputBerkas" onclick="showPage('inputBerkas')"><i class="fa-solid fa-circle-plus"></i> Input Berkas</div>
+      <div class="sidebar-link" data-page="daftarBerkas" onclick="showPage('daftarBerkas')"><i class="fa-solid fa-list"></i> Daftar Berkas</div>
+      <div class="sidebar-link" data-page="cariBerkas" onclick="showPage('cariBerkas')"><i class="fa-solid fa-magnifying-glass"></i> Cari Berkas</div>
+      <div class="sidebar-link" data-page="masterJenis" onclick="showPage('masterJenis')"><i class="fa-solid fa-sitemap"></i> Jenis &amp; Kelengkapan</div>
+      <div class="sidebar-link" data-page="masterStatus" onclick="showPage('masterStatus')"><i class="fa-solid fa-flag"></i> Master Status</div>
+      <div class="sidebar-link d-none" id="menuUser" data-page="manajemenUser" onclick="showPage('manajemenUser')"><i class="fa-solid fa-users-gear"></i> Manajemen User</div>
+      <div class="sidebar-link" data-page="logAktivitas" onclick="showPage('logAktivitas')"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</div>
+      <div class="sidebar-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+    </div>
+  </nav>
+
+  <div id="mainContent">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="sidebarToggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <h1 id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="user-chip">
+        <div class="avatar" id="userChipAvatar">?</div>
+        <div class="info">
+          <div class="name" id="userChipName">-</div>
+          <div class="role" id="userChipRole">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page-section active" id="page-dashboard">
+      <div class="grid grid-4">
+        <div class="card stat-card">
+          <div><div class="label">Berkas Tersimpan</div><div class="value" id="statTotalBerkas" style="color:var(--primary)">0</div></div>
+          <div class="icon-box" style="background:var(--primary-light);color:var(--primary)"><i class="fa-solid fa-folder-open"></i></div>
+        </div>
+        <div class="card stat-card">
+          <div><div class="label">Sudah Diambil</div><div class="value" id="statTotalDiambil" style="color:var(--primary)">0</div></div>
+          <div class="icon-box" style="background:#E3F6EA;color:var(--primary)"><i class="fa-solid fa-box-open"></i></div>
+        </div>
+        <div class="card stat-card">
+          <div><div class="label">Belum Diambil</div><div class="value" id="statBelumDiambil" style="color:var(--warning)">0</div></div>
+          <div class="icon-box" style="background:#FEF1DE;color:var(--warning)"><i class="fa-solid fa-hourglass-half"></i></div>
+        </div>
+        <div class="card stat-card">
+          <div><div class="label">Total User</div><div class="value" id="statTotalUsers" style="color:var(--accent)">0</div></div>
+          <div class="icon-box" style="background:#E7F1FC;color:var(--accent)"><i class="fa-solid fa-users"></i></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card"><h3>Berkas per Status</h3><canvas id="chartStatus" height="200"></canvas></div>
+        <div class="card"><h3>Berkas per Jenis Berkas</h3><canvas id="chartJenis" height="200"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+          <h3 style="margin:0;">Laporan Berkas Tersimpan &amp; Diambil</h3>
+          <div class="tab-group">
+            <button type="button" class="tab-btn active" id="btnLaporanHarian" onclick="loadLaporan('harian')">Harian</button>
+            <button type="button" class="tab-btn" id="btnLaporanBulanan" onclick="loadLaporan('bulanan')">Bulanan</button>
+            <button type="button" class="tab-btn" id="btnLaporanTahunan" onclick="loadLaporan('tahunan')">Tahunan</button>
+          </div>
+        </div>
+        <canvas id="chartLaporan" height="90"></canvas>
+        <div class="table-responsive" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Periode</th><th>Tersimpan</th><th>Diambil</th></tr></thead>
+            <tbody id="laporanTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INPUT BERKAS ===== -->
+    <div class="page-section" id="page-inputBerkas">
+      <div class="card">
+        <form id="inputBerkasForm">
+          <div class="grid grid-2">
+            <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="inNama" required></div>
+            <div class="form-group"><label class="form-label">No. Kendaraan</label><input type="text" class="form-control" id="inNoKendaraan" required style="text-transform:uppercase;"></div>
+            <div class="form-group"><label class="form-label">No. HP</label><input type="text" class="form-control" id="inNoHp" required></div>
+            <div class="form-group"><label class="form-label">Status</label>
+              <select class="form-select" id="inStatus" required><option value="" disabled selected>Pilih Status...</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Jenis Berkas</label>
+              <select class="form-select" id="inJenisBerkas" required onchange="renderKelengkapanChecklist('input')"><option value="" disabled selected>Pilih Jenis Berkas...</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Kode Berkas</label><input type="text" class="form-control" value="(dibuat otomatis saat disimpan)" disabled></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jenis Kelengkapan</label>
+            <div id="inKelengkapanBox" class="text-muted" style="border:1px solid var(--border);border-radius:8px;padding:14px;">Pilih Jenis Berkas dahulu untuk menampilkan daftar kelengkapan.</div>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Berkas</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== DAFTAR BERKAS ===== -->
+    <div class="page-section" id="page-daftarBerkas">
+      <div class="card">
+        <div class="grid" style="grid-template-columns: repeat(4,1fr);">
+          <select class="form-select" id="filterStatus" onchange="loadBerkas()"><option value="All">Semua Status</option></select>
+          <select class="form-select" id="filterJenis" onchange="loadBerkas()"><option value="All">Semua Jenis Berkas</option></select>
+          <select class="form-select" id="filterAmbil" onchange="renderDaftarBerkasTable()">
+            <option value="All">Semua Pengambilan</option>
+            <option value="Belum">Belum Diambil</option>
+            <option value="Sudah">Sudah Diambil</option>
+          </select>
+          <div style="display:flex;align-items:center;justify-content:flex-end;" class="text-muted" id="totalDaftarBerkas"></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;">
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Kode</th><th>Nama</th><th>No. Kendaraan</th><th>No. HP</th><th>Jenis Berkas</th><th>Kelengkapan</th><th>Status</th><th>Pengambilan</th><th>Aksi</th></tr></thead>
+            <tbody id="daftarBerkasBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pagination" id="paginationDaftar"></div>
+    </div>
+
+    <!-- ===== CARI BERKAS ===== -->
+    <div class="page-section" id="page-cariBerkas">
+      <div class="card">
+        <div style="display:flex;gap:10px;">
+          <input type="text" class="form-control" id="searchBerkasInput" placeholder="Cari berdasarkan Nama, No. HP, atau No. Kendaraan (Nopol)...">
+          <button class="btn btn-primary" onclick="searchBerkas()"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;">
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Kode</th><th>Nama</th><th>No. Kendaraan</th><th>No. HP</th><th>Jenis Berkas</th><th>Kelengkapan</th><th>Status</th><th>Pengambilan</th><th>Aksi</th></tr></thead>
+            <tbody id="cariBerkasBody"><tr><td colspan="9" class="text-muted">Masukkan kata kunci lalu klik Cari.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MASTER JENIS & KELENGKAPAN ===== -->
+    <div class="page-section" id="page-masterJenis">
+      <div class="grid grid-2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <h3 style="margin:0;">Jenis Berkas</h3>
+            <button class="btn btn-primary btn-sm" onclick="openJenisModal()"><i class="fa-solid fa-plus"></i> Tambah</button>
+          </div>
+          <div id="jenisBerkasList"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <h3 style="margin:0;">Kelengkapan: <span style="color:var(--primary)" id="selectedJenisLabel">- pilih jenis berkas -</span></h3>
+            <button class="btn btn-primary btn-sm" id="btnTambahKelengkapan" onclick="openKelengkapanModal()" disabled><i class="fa-solid fa-plus"></i> Tambah</button>
+          </div>
+          <div id="kelengkapanList" class="text-muted">Pilih salah satu Jenis Berkas di sebelah kiri.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MASTER STATUS ===== -->
+    <div class="page-section" id="page-masterStatus">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="margin:0;">Daftar Status</h3>
+          <button class="btn btn-primary btn-sm" onclick="openStatusModal()"><i class="fa-solid fa-plus"></i> Tambah Status</button>
+        </div>
+        <div id="statusList"></div>
+      </div>
+    </div>
+
+    <!-- ===== MANAJEMEN USER ===== -->
+    <div class="page-section" id="page-manajemenUser">
+      <div class="card">
+        <h3>Daftar User</h3>
+        <p class="text-muted" style="margin-top:-8px;font-size:13px;">Untuk menambah akun login baru, buat lewat Supabase Dashboard &rarr; Authentication (lihat README). Di sini hanya mengatur nama &amp; role.</p>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LOG AKTIVITAS ===== -->
+    <div class="page-section" id="page-logAktivitas">
+      <div class="card">
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Detail</th></tr></thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: REVIEW & AMBIL BERKAS ============ -->
+<div class="modal-backdrop" id="reviewBerkasModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Review Berkas</h3><button class="close-btn" onclick="closeModal('reviewBerkasModal')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="reviewId">
+      <table style="margin-bottom:16px;">
+        <tr><td class="text-muted" style="width:130px;">Kode Berkas</td><td style="font-weight:700;color:var(--primary)" id="reviewKode">-</td></tr>
+        <tr><td class="text-muted">Nama</td><td id="reviewNama">-</td></tr>
+        <tr><td class="text-muted">No. Kendaraan</td><td id="reviewNoKendaraan">-</td></tr>
+        <tr><td class="text-muted">No. HP</td><td id="reviewNoHp">-</td></tr>
+        <tr><td class="text-muted">Jenis Berkas</td><td id="reviewJenisBerkas">-</td></tr>
+        <tr><td class="text-muted">Status</td><td id="reviewStatus">-</td></tr>
+      </table>
+      <h3 style="font-size:14px;">Kelengkapan yang Sudah Dicentang</h3>
+      <div id="reviewKelengkapanBox" style="border:1px solid var(--border);border-radius:8px;padding:14px;">-</div>
+      <div id="reviewAmbilInfo" class="d-none" style="margin-top:14px;background:#E3F6EA;color:#1B7A3D;padding:12px;border-radius:8px;font-size:13.5px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('reviewBerkasModal')">Tutup</button>
+      <button class="btn btn-success" id="btnKonfirmasiAmbil" onclick="konfirmasiAmbilBerkas()"><i class="fa-solid fa-box-open"></i> Ambil Berkas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: EDIT BERKAS ============ -->
+<div class="modal-backdrop" id="editBerkasModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Edit Data Berkas</h3><button class="close-btn" onclick="closeModal('editBerkasModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="editBerkasForm">
+        <input type="hidden" id="editId">
+        <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="editNama" required></div>
+        <div class="form-group"><label class="form-label">No. Kendaraan</label><input type="text" class="form-control" id="editNoKendaraan" required style="text-transform:uppercase;"></div>
+        <div class="form-group"><label class="form-label">No. HP</label><input type="text" class="form-control" id="editNoHp" required></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="editStatus" required></select></div>
+        <div class="form-group"><label class="form-label">Jenis Berkas</label><select class="form-select" id="editJenisBerkas" required onchange="renderKelengkapanChecklist('edit')"></select></div>
+        <div class="form-group"><label class="form-label">Kode Berkas</label><input type="text" class="form-control" id="editKode" readonly style="background:#F3F4F6;"></div>
+        <div class="form-group">
+          <label class="form-label">Jenis Kelengkapan</label>
+          <div id="editKelengkapanBox" style="border:1px solid var(--border);border-radius:8px;padding:14px;">-</div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan Perubahan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: JENIS BERKAS ============ -->
+<div class="modal-backdrop" id="jenisModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="jenisModalTitle">Tambah Jenis Berkas</h3><button class="close-btn" onclick="closeModal('jenisModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="jenisForm">
+        <input type="hidden" id="jenisId">
+        <div class="form-group"><label class="form-label">Nama Jenis Berkas</label><input type="text" class="form-control" id="jenisNama" required></div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: KELENGKAPAN ============ -->
+<div class="modal-backdrop" id="kelengkapanModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="kelengkapanModalTitle">Tambah Kelengkapan</h3><button class="close-btn" onclick="closeModal('kelengkapanModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="kelengkapanForm">
+        <input type="hidden" id="kelengkapanId">
+        <div class="form-group"><label class="form-label">Nama Kelengkapan</label><input type="text" class="form-control" id="kelengkapanNama" required></div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: STATUS ============ -->
+<div class="modal-backdrop" id="statusModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="statusModalTitle">Tambah Status</h3><button class="close-btn" onclick="closeModal('statusModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="statusForm">
+        <input type="hidden" id="statusId">
+        <div class="form-group"><label class="form-label">Nama Status</label><input type="text" class="form-control" id="statusNama" required></div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: USER (edit nama & role) ============ -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Edit User</h3><button class="close-btn" onclick="closeModal('userModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="userNama" required></div>
+        <div class="form-group"><label class="form-label">Role</label>
+          <select class="form-select" id="userRole" required>
+            <option value="Super Admin">Super Admin</option>
+            <option value="Staff">Staff</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
