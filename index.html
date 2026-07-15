@@ -218,8 +218,11 @@
     <!-- ===== MANAJEMEN USER ===== -->
     <div class="page-section" id="page-manajemenUser">
       <div class="card">
-        <h3>Daftar User</h3>
-        <p class="text-muted" style="margin-top:-8px;font-size:13px;">Untuk menambah akun login baru, buat lewat Supabase Dashboard &rarr; Authentication (lihat README). Di sini hanya mengatur nama &amp; role.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <h3 style="margin:0;">Daftar User</h3>
+          <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
+        </div>
+        <p class="text-muted" style="font-size:13px;margin:6px 0 14px;">Akun baru dibuat langsung dari sini (aman, lewat Edge Function — kunci rahasia tidak pernah ke browser).</p>
         <div class="table-responsive">
           <table>
             <thead><tr><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead>
@@ -328,6 +331,27 @@
         <input type="hidden" id="statusId">
         <div class="form-group"><label class="form-label">Nama Status</label><input type="text" class="form-control" id="statusNama" required></div>
         <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: TAMBAH USER BARU ============ -->
+<div class="modal-backdrop" id="createUserModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Tambah User Baru</h3><button class="close-btn" onclick="closeModal('createUserModal')">&times;</button></div>
+    <div class="modal-body">
+      <form id="createUserForm">
+        <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="newUserNama" required></div>
+        <div class="form-group"><label class="form-label">Email (untuk login)</label><input type="email" class="form-control" id="newUserEmail" required></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-control" id="newUserPassword" minlength="6" required placeholder="Minimal 6 karakter"></div>
+        <div class="form-group"><label class="form-label">Role</label>
+          <select class="form-select" id="newUserRole" required>
+            <option value="Staff">Staff</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Buat User</button>
       </form>
     </div>
   </div>
