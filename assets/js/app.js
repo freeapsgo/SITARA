@@ -138,6 +138,7 @@ async function initAppData() {
 
   populateJenisDropdowns();
   populateStatusDropdowns();
+  await ensureTersimpanStatusExists();
 }
 
 // ============================================================
@@ -276,14 +277,27 @@ function populateJenisDropdowns() {
 }
 
 function populateStatusDropdowns() {
-  const opts = '<option value="" disabled selected>Pilih Status...</option>' +
-    statusList.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
-  document.getElementById('inStatus').innerHTML = opts;
   document.getElementById('editStatus').innerHTML = statusList.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
 
   const filterOpts = '<option value="All">Semua Status</option>' +
     statusList.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
   document.getElementById('filterStatus').innerHTML = filterOpts;
+}
+
+function getTersimpanStatusId() {
+  const found = statusList.find(s => s.nama.trim().toLowerCase() === 'tersimpan');
+  return found ? found.id : null;
+}
+
+async function ensureTersimpanStatusExists() {
+  if (getTersimpanStatusId()) return;
+  if (currentProfile.role !== 'Super Admin') return; // biarkan, akan dicek lagi saat submit
+
+  const { data, error } = await supabaseClient.from('status_master').insert({ nama: 'Tersimpan' }).select().single();
+  if (!error && data) {
+    statusList.push(data);
+    populateStatusDropdowns();
+  }
 }
 
 function renderKelengkapanChecklist(mode, checkedNames) {
@@ -325,12 +339,18 @@ function resetInputForm() {
 document.getElementById('inputBerkasForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
+  const tersimpanId = getTersimpanStatusId();
+  if (!tersimpanId) {
+    showToast('Status "Tersimpan" belum ada di Master Status. Minta Super Admin menambahkannya dulu di menu Master Status.', 'error');
+    return;
+  }
+
   const payload = {
     nama: document.getElementById('inNama').value.trim(),
     no_kendaraan: document.getElementById('inNoKendaraan').value.trim().toUpperCase(),
     no_hp: document.getElementById('inNoHp').value.trim(),
     jenis_berkas_id: Number(document.getElementById('inJenisBerkas').value),
-    status_id: Number(document.getElementById('inStatus').value),
+    status_id: tersimpanId,
     kelengkapan: getCheckedKelengkapan('input')
   };
 
