@@ -356,6 +356,60 @@ document.getElementById('inputBerkasForm').addEventListener('submit', async func
 // ============================================================
 // DAFTAR BERKAS
 // ============================================================
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+async function exportBerkasExcel() {
+  const startDate = document.getElementById('exportStartDate').value;
+  const endDate = document.getElementById('exportEndDate').value;
+
+  showLoading(true);
+  let query = supabaseClient.from('berkas').select('*').order('created_at', { ascending: true });
+  if (startDate) query = query.gte('created_at', startDate + 'T00:00:00');
+  if (endDate) query = query.lte('created_at', endDate + 'T23:59:59');
+
+  const { data, error } = await query;
+  showLoading(false);
+  if (error) { handleError(error); return; }
+
+  if (!data || data.length === 0) {
+    showToast('Tidak ada data pada rentang tanggal tersebut.', 'warning');
+    return;
+  }
+
+  const exportRows = data.map(row => {
+    const mapped = mapBerkasRow(row);
+    return {
+      'Kode Berkas': mapped.kodeBerkas,
+      'Nama': mapped.nama,
+      'No. Kendaraan': mapped.noKendaraan,
+      'No. HP': mapped.noHp,
+      'Jenis Berkas': mapped.jenisBerkasNama,
+      'Kelengkapan': mapped.kelengkapan.join(', ') || '-',
+      'Status': mapped.statusNama,
+      'Sudah Diambil': mapped.diambil ? 'Ya' : 'Tidak',
+      'Tanggal Ambil': mapped.tanggalAmbil || '-',
+      'Tanggal Input': new Date(row.created_at).toLocaleString('id-ID'),
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(exportRows);
+  ws['!cols'] = [
+    { wch: 13 }, { wch: 22 }, { wch: 14 }, { wch: 15 }, { wch: 18 },
+    { wch: 35 }, { wch: 14 }, { wch: 13 }, { wch: 18 }, { wch: 18 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Berkas');
+
+  const labelRange = (startDate || 'awal') + '_sd_' + (endDate || 'sekarang');
+  const fileName = `Data-Berkas-Kendaraan_${labelRange}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+
+  await logAksi('Export Excel', `Export ${data.length} data berkas` + (startDate || endDate ? ` (rentang ${startDate || 'awal'} s/d ${endDate || 'sekarang'})` : ' (semua data)'));
+  showToast(`Berhasil export ${data.length} data ke Excel.`);
+}
+
 async function loadBerkas() {
   showLoading(true);
   const statusFilter = document.getElementById('filterStatus').value;
