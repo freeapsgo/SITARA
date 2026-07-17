@@ -124,19 +124,20 @@
             <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="inNama" required></div>
             <div class="form-group"><label class="form-label">No. Kendaraan</label><input type="text" class="form-control" id="inNoKendaraan" required style="text-transform:uppercase;"></div>
             <div class="form-group"><label class="form-label">No. HP</label><input type="text" class="form-control" id="inNoHp" required></div>
-            <div class="form-group"><label class="form-label">Status</label>
-              <select class="form-select" id="inStatus" required><option value="" disabled selected>Pilih Status...</option></select>
-            </div>
             <div class="form-group"><label class="form-label">Jenis Berkas</label>
               <select class="form-select" id="inJenisBerkas" required onchange="renderKelengkapanChecklist('input')"><option value="" disabled selected>Pilih Jenis Berkas...</option></select>
             </div>
+            <div class="form-group"><label class="form-label">Status</label><input type="text" class="form-control" value="Tersimpan (otomatis)" disabled></div>
             <div class="form-group"><label class="form-label">Kode Berkas</label><input type="text" class="form-control" value="(dibuat otomatis saat disimpan)" disabled></div>
           </div>
           <div class="form-group">
             <label class="form-label">Jenis Kelengkapan</label>
             <div id="inKelengkapanBox" class="text-muted" style="border:1px solid var(--border);border-radius:8px;padding:14px;">Pilih Jenis Berkas dahulu untuk menampilkan daftar kelengkapan.</div>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Berkas</button>
+          <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Berkas</button>
+            <button type="button" class="btn btn-outline" onclick="resetInputForm()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
         </form>
       </div>
     </div>
