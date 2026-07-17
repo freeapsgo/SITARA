@@ -316,7 +316,12 @@
     <div class="modal-body">
       <form id="jenisForm">
         <input type="hidden" id="jenisId">
-        <div class="form-group"><label class="form-label">Nama Jenis Berkas</label><input type="text" class="form-control" id="jenisNama" required></div>
+        <div class="form-group"><label class="form-label">Nama Jenis Berkas</label><input type="text" class="form-control" id="jenisNama" required placeholder="Contoh: Surat Keputusan"></div>
+        <div class="form-group">
+          <label class="form-label">Kode Prefix Penomoran</label>
+          <input type="text" class="form-control" id="jenisKodePrefix" required maxlength="10" placeholder="Contoh: SK" style="text-transform:uppercase;">
+          <small class="text-muted">Dipakai untuk penomoran Kode Berkas otomatis. Contoh: prefix "SK" akan menghasilkan kode SK00001, SK00002, dst.</small>
+        </div>
         <button type="submit" class="btn btn-primary btn-block">Simpan</button>
       </form>
     </div>
