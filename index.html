@@ -48,10 +48,10 @@
       <div class="sidebar-link" data-page="inputBerkas" onclick="showPage('inputBerkas')"><i class="fa-solid fa-circle-plus"></i> Input Berkas</div>
       <div class="sidebar-link" data-page="daftarBerkas" onclick="showPage('daftarBerkas')"><i class="fa-solid fa-list"></i> Daftar Berkas</div>
       <div class="sidebar-link" data-page="cariBerkas" onclick="showPage('cariBerkas')"><i class="fa-solid fa-magnifying-glass"></i> Cari Berkas</div>
-      <div class="sidebar-link" data-page="masterJenis" onclick="showPage('masterJenis')"><i class="fa-solid fa-sitemap"></i> Jenis &amp; Kelengkapan</div>
-      <div class="sidebar-link" data-page="masterStatus" onclick="showPage('masterStatus')"><i class="fa-solid fa-flag"></i> Master Status</div>
-      <div class="sidebar-link d-none" id="menuUser" data-page="manajemenUser" onclick="showPage('manajemenUser')"><i class="fa-solid fa-users-gear"></i> Manajemen User</div>
-      <div class="sidebar-link" data-page="logAktivitas" onclick="showPage('logAktivitas')"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</div>
+      <div class="sidebar-link d-none admin-only-menu" id="menuMasterJenis" data-page="masterJenis" onclick="showPage('masterJenis')"><i class="fa-solid fa-sitemap"></i> Jenis &amp; Kelengkapan</div>
+      <div class="sidebar-link d-none admin-only-menu" id="menuMasterStatus" data-page="masterStatus" onclick="showPage('masterStatus')"><i class="fa-solid fa-flag"></i> Master Status</div>
+      <div class="sidebar-link d-none admin-only-menu" id="menuUser" data-page="manajemenUser" onclick="showPage('manajemenUser')"><i class="fa-solid fa-users-gear"></i> Manajemen User</div>
+      <div class="sidebar-link d-none admin-only-menu" id="menuLog" data-page="logAktivitas" onclick="showPage('logAktivitas')"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</div>
       <div class="sidebar-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
     </div>
   </nav>
