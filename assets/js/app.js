@@ -88,7 +88,7 @@ async function afterLogin(session) {
   document.getElementById('userChipAvatar').innerText = (profile.nama || '?').charAt(0).toUpperCase();
 
   if (profile.role === 'Super Admin') {
-    document.getElementById('menuUser').classList.remove('d-none');
+    document.querySelectorAll('.admin-only-menu').forEach(el => el.classList.remove('d-none'));
   }
 
   await initAppData();
@@ -155,7 +155,14 @@ const pageTitles = {
   logAktivitas: 'Log Aktivitas'
 };
 
+const ADMIN_ONLY_PAGES = ['masterJenis', 'masterStatus', 'manajemenUser', 'logAktivitas'];
+
 function showPage(page) {
+  if (ADMIN_ONLY_PAGES.includes(page) && currentProfile.role !== 'Super Admin') {
+    showToast('Halaman ini khusus untuk Super Admin.', 'error');
+    page = 'dashboard';
+  }
+
   document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
