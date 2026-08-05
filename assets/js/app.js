@@ -195,6 +195,11 @@ function closeSidebar() {
 // ============================================================
 // DASHBOARD
 // ============================================================
+const CHART_PALETTE = ['#1B6E3C', '#2E86DE', '#F2A93B', '#E24C4C', '#8E44AD', '#16A085', '#D35400', '#2C3E50', '#6FCF97', '#C0392B'];
+function getChartColors(n) {
+  return Array.from({ length: n }, (_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+}
+
 function animateCount(el, endValue) {
   const startValue = Number(el.innerText) || 0;
   if (startValue === endValue) { el.innerText = endValue; return; }
@@ -239,13 +244,14 @@ async function loadDashboard() {
   if (chartStatusInstance) chartStatusInstance.destroy();
   chartStatusInstance = new Chart(document.getElementById('chartStatus'), {
     type: 'doughnut',
-    data: { labels: statusLabels, datasets: [{ data: statusValues, backgroundColor: ['#1B6E3C', '#6FCF97', '#BFE3CB', '#F2A93B', '#E24C4C', '#2E86DE'] }] }
+    data: { labels: statusLabels, datasets: [{ data: statusValues, backgroundColor: getChartColors(statusLabels.length), borderWidth: 2, borderColor: '#fff' }] },
+    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14 } } } }
   });
 
   if (chartJenisInstance) chartJenisInstance.destroy();
   chartJenisInstance = new Chart(document.getElementById('chartJenis'), {
     type: 'bar',
-    data: { labels: jenisLabels, datasets: [{ label: 'Jumlah Berkas', data: jenisValues, backgroundColor: '#1B6E3C' }] },
+    data: { labels: jenisLabels, datasets: [{ label: 'Jumlah Berkas', data: jenisValues, backgroundColor: getChartColors(jenisLabels.length), borderRadius: 6 }] },
     options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
   });
 
@@ -271,11 +277,29 @@ async function loadLaporan(periode) {
     data: {
       labels: labels,
       datasets: [
-        { label: 'Tersimpan', data: tersimpan, borderColor: '#1B6E3C', backgroundColor: 'rgba(27,110,60,0.12)', tension: 0.3, fill: true },
-        { label: 'Diambil', data: diambil, borderColor: '#2E86DE', backgroundColor: 'rgba(46,134,222,0.12)', tension: 0.3, fill: true }
+        {
+          label: 'Tersimpan', data: tersimpan,
+          borderColor: '#1B6E3C', backgroundColor: 'rgba(27,110,60,0.15)',
+          pointBackgroundColor: '#1B6E3C', pointBorderColor: '#fff', pointBorderWidth: 2,
+          pointRadius: labels.length <= 3 ? 7 : 4, pointHoverRadius: 9,
+          borderWidth: 3, tension: 0.3, fill: true
+        },
+        {
+          label: 'Diambil', data: diambil,
+          borderColor: '#2E86DE', backgroundColor: 'rgba(46,134,222,0.15)',
+          pointBackgroundColor: '#2E86DE', pointBorderColor: '#fff', pointBorderWidth: 2,
+          pointRadius: labels.length <= 3 ? 7 : 4, pointHoverRadius: 9,
+          borderWidth: 3, tension: 0.3, fill: true
+        }
       ]
     },
-    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { offset: true }
+      },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14 } } }
+    }
   });
 
   const tbody = document.getElementById('laporanTableBody');
