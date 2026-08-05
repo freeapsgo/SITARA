@@ -14,6 +14,8 @@ let chartStatusInstance = null;
 let chartJenisInstance = null;
 let chartLaporanInstance = null;
 let currentLaporanPeriode = 'harian';
+let currentUsersList = [];
+let currentLogsList = [];
 
 // ============================================================
 // UI HELPERS: toast, loading, modal
@@ -86,6 +88,7 @@ async function afterLogin(session) {
   document.getElementById('userChipName').innerText = profile.nama;
   document.getElementById('userChipRole').innerText = profile.role;
   document.getElementById('userChipAvatar').innerText = (profile.nama || '?').charAt(0).toUpperCase();
+  document.getElementById('userChipRoleDot').classList.toggle('admin', profile.role === 'Super Admin');
 
   if (profile.role === 'Super Admin') {
     document.querySelectorAll('.admin-only-menu').forEach(el => el.classList.remove('d-none'));
@@ -192,6 +195,20 @@ function closeSidebar() {
 // ============================================================
 // DASHBOARD
 // ============================================================
+function animateCount(el, endValue) {
+  const startValue = Number(el.innerText) || 0;
+  if (startValue === endValue) { el.innerText = endValue; return; }
+  const duration = 500;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.innerText = Math.round(startValue + (endValue - startValue) * eased);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 async function loadDashboard() {
   const { data: berkasData } = await supabaseClient.from('berkas').select('status_id, jenis_berkas_id, diambil');
   const { count: totalUsers } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
@@ -200,10 +217,10 @@ async function loadDashboard() {
   const totalBerkas = rows.length;
   const totalDiambil = rows.filter(r => r.diambil).length;
 
-  document.getElementById('statTotalBerkas').innerText = totalBerkas;
-  document.getElementById('statTotalDiambil').innerText = totalDiambil;
-  document.getElementById('statBelumDiambil').innerText = totalBerkas - totalDiambil;
-  document.getElementById('statTotalUsers').innerText = totalUsers || 0;
+  animateCount(document.getElementById('statTotalBerkas'), totalBerkas);
+  animateCount(document.getElementById('statTotalDiambil'), totalDiambil);
+  animateCount(document.getElementById('statBelumDiambil'), totalBerkas - totalDiambil);
+  animateCount(document.getElementById('statTotalUsers'), totalUsers || 0);
 
   const statusCounts = {};
   const jenisCounts = {};
@@ -974,18 +991,36 @@ async function loadUsers() {
   showLoading(false);
   if (error) { handleError(error); return; }
 
+  currentUsersList = data || [];
+  renderUserTable();
+}
+
+function renderUserTable() {
   const tbody = document.getElementById('userTableBody');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="text-muted">Belum ada data user.</td></tr>';
+  const keyword = (document.getElementById('userSearchInput').value || '').trim().toLowerCase();
+  const filtered = keyword
+    ? currentUsersList.filter(u => (u.nama || '').toLowerCase().includes(keyword))
+    : currentUsersList;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="text-muted">${keyword ? 'Tidak ada user yang cocok.' : 'Belum ada data user.'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map(u => `
+  tbody.innerHTML = filtered.map(u => {
+    const isAdmin = u.role === 'Super Admin';
+    return `
     <tr>
-      <td style="font-weight:600;">${u.nama}</td>
-      <td><span class="badge badge-secondary">${u.role}</span></td>
+      <td>
+        <div class="user-row-cell">
+          <div class="avatar-sm">${(u.nama || '?').charAt(0).toUpperCase()}</div>
+          <span style="font-weight:600;">${u.nama}</span>
+        </div>
+      </td>
+      <td><span class="badge ${isAdmin ? 'badge-admin' : 'badge-staff'}">${u.role}</span></td>
       <td><button class="btn btn-outline btn-sm btn-icon" onclick='openUserModal(${JSON.stringify(u.id)}, ${JSON.stringify(u.nama)}, ${JSON.stringify(u.role)})'><i class="fa-solid fa-pen"></i></button></td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openUserModal(id, nama, role) {
@@ -1027,17 +1062,40 @@ async function loadLogs() {
   showLoading(false);
   if (error) { handleError(error); return; }
 
+  currentLogsList = data || [];
+  renderLogTable();
+}
+
+function logIconFor(aksi) {
+  const a = (aksi || '').toLowerCase();
+  if (a.includes('hapus')) return { icon: 'fa-trash', bg: '#FCE9E9', color: 'var(--danger)' };
+  if (a.includes('tambah')) return { icon: 'fa-plus', bg: 'var(--primary-light)', color: 'var(--primary)' };
+  if (a.includes('update') || a.includes('edit')) return { icon: 'fa-pen', bg: '#E7F1FC', color: 'var(--accent)' };
+  if (a.includes('ambil')) return { icon: 'fa-box-open', bg: '#FEF1DE', color: 'var(--warning)' };
+  if (a.includes('export')) return { icon: 'fa-file-arrow-down', bg: '#E3F6EA', color: '#1B7A3D' };
+  return { icon: 'fa-clock-rotate-left', bg: '#EEF1F4', color: '#4B5563' };
+}
+
+function renderLogTable() {
   const tbody = document.getElementById('logTableBody');
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Belum ada log aktivitas.</td></tr>';
+  const keyword = (document.getElementById('logSearchInput').value || '').trim().toLowerCase();
+  const filtered = keyword
+    ? currentLogsList.filter(log => (log.user_nama || '').toLowerCase().includes(keyword) || (log.aksi || '').toLowerCase().includes(keyword))
+    : currentLogsList;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-muted">${keyword ? 'Tidak ada log yang cocok.' : 'Belum ada log aktivitas.'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map(log => `
+  tbody.innerHTML = filtered.map(log => {
+    const ic = logIconFor(log.aksi);
+    return `
     <tr>
       <td style="white-space:nowrap;">${new Date(log.created_at).toLocaleString('id-ID')}</td>
       <td style="font-weight:600;color:var(--primary)">${log.user_nama || '-'}</td>
-      <td>${log.aksi}</td>
+      <td><span class="log-icon" style="background:${ic.bg};color:${ic.color}"><i class="fa-solid ${ic.icon}"></i></span>${log.aksi}</td>
       <td>${log.detail || ''}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
