@@ -1,2 +1,2 @@
 # SITARA
-Sistem Informasi Titipan Arsip
+Sistem Informasi Pendataan Arsip Sementara
