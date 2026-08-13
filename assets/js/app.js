@@ -192,6 +192,17 @@ function closeSidebar() {
 // ============================================================
 // DASHBOARD
 // ============================================================
+// Palet warna kaya, dipakai bersama di seluruh grafik dashboard.
+// Otomatis berulang (cycle) kalau jumlah kategori lebih banyak dari jumlah warna.
+const CHART_PALETTE = [
+  '#1B6E3C', '#2E86DE', '#F2A93B', '#E24C4C', '#9B59B6',
+  '#16A085', '#E67E22', '#3498DB', '#C0392B', '#27AE60',
+  '#8E44AD', '#F1C40F', '#2980B9', '#D35400', '#1ABC9C',
+];
+function getChartColors(count) {
+  return Array.from({ length: count }, (_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+}
+
 async function loadDashboard() {
   const { data: berkasData } = await supabaseClient.from('berkas').select('status_id, jenis_berkas_id, diambil');
   const { count: totalUsers } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
@@ -222,13 +233,30 @@ async function loadDashboard() {
   if (chartStatusInstance) chartStatusInstance.destroy();
   chartStatusInstance = new Chart(document.getElementById('chartStatus'), {
     type: 'doughnut',
-    data: { labels: statusLabels, datasets: [{ data: statusValues, backgroundColor: ['#1B6E3C', '#6FCF97', '#BFE3CB', '#F2A93B', '#E24C4C', '#2E86DE'] }] }
+    data: {
+      labels: statusLabels,
+      datasets: [{
+        data: statusValues,
+        backgroundColor: getChartColors(statusLabels.length),
+        borderColor: '#fff',
+        borderWidth: 2,
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
   });
 
   if (chartJenisInstance) chartJenisInstance.destroy();
   chartJenisInstance = new Chart(document.getElementById('chartJenis'), {
     type: 'bar',
-    data: { labels: jenisLabels, datasets: [{ label: 'Jumlah Berkas', data: jenisValues, backgroundColor: '#1B6E3C' }] },
+    data: {
+      labels: jenisLabels,
+      datasets: [{
+        label: 'Jumlah Berkas',
+        data: jenisValues,
+        backgroundColor: getChartColors(jenisLabels.length),
+        borderRadius: 6,
+      }]
+    },
     options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
   });
 
@@ -254,11 +282,11 @@ async function loadLaporan(periode) {
     data: {
       labels: labels,
       datasets: [
-        { label: 'Tersimpan', data: tersimpan, borderColor: '#1B6E3C', backgroundColor: 'rgba(27,110,60,0.12)', tension: 0.3, fill: true },
-        { label: 'Diambil', data: diambil, borderColor: '#2E86DE', backgroundColor: 'rgba(46,134,222,0.12)', tension: 0.3, fill: true }
+        { label: 'Tersimpan', data: tersimpan, borderColor: '#1B6E3C', backgroundColor: 'rgba(27,110,60,0.15)', pointBackgroundColor: '#1B6E3C', borderWidth: 2.5, tension: 0.35, fill: true },
+        { label: 'Diambil', data: diambil, borderColor: '#E67E22', backgroundColor: 'rgba(230,126,34,0.15)', pointBackgroundColor: '#E67E22', borderWidth: 2.5, tension: 0.35, fill: true }
       ]
     },
-    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { position: 'bottom' } } }
   });
 
   const tbody = document.getElementById('laporanTableBody');
