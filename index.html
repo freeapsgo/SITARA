@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SITARA - Sistem Informasi Pendataan Arsip Sementara</title>
+<title>Sistem Manajemen Berkas Kendaraan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,9 +19,8 @@
 <div id="loginPage">
   <div class="login-card">
     <div class="login-brand">
-      <div class="icon-circle"><i class="fa-solid fa-box-archive"></i></div>
-      <h1>SITARA</h1>
-      <div class="login-brand-tagline">Sistem Informasi Pendataan Arsip Sementara</div>
+      <div class="icon-circle"><i class="fa-solid fa-id-card"></i></div>
+      <h1>Manajemen Berkas Kendaraan</h1>
       <p>Silakan login untuk melanjutkan</p>
     </div>
     <form id="loginForm">
@@ -43,13 +42,7 @@
   <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <nav id="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-icon"><i class="fa-solid fa-box-archive"></i></div>
-      <div class="sidebar-brand-text">
-        <div class="sidebar-brand-title">SITARA</div>
-        <div class="sidebar-brand-sub">Pendataan Arsip Sementara</div>
-      </div>
-    </div>
+    <div class="sidebar-brand"><i class="fa-solid fa-id-card"></i> Berkas Kendaraan</div>
     <div class="sidebar-nav">
       <div class="sidebar-link active" data-page="dashboard" onclick="showPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> Dashboard</div>
       <div class="sidebar-link" data-page="inputBerkas" onclick="showPage('inputBerkas')"><i class="fa-solid fa-circle-plus"></i> Input Berkas</div>
@@ -73,7 +66,7 @@
         <div class="avatar" id="userChipAvatar">?</div>
         <div class="info">
           <div class="name" id="userChipName">-</div>
-          <div class="role"><span class="role-dot" id="userChipRoleDot"></span><span id="userChipRole">-</span></div>
+          <div class="role" id="userChipRole">-</div>
         </div>
       </div>
     </div>
@@ -81,19 +74,19 @@
     <!-- ===== DASHBOARD ===== -->
     <div class="page-section active" id="page-dashboard">
       <div class="grid grid-4">
-        <div class="card stat-card stat-card-primary">
+        <div class="card stat-card">
           <div><div class="label">Berkas Tersimpan</div><div class="value" id="statTotalBerkas" style="color:var(--primary)">0</div></div>
           <div class="icon-box" style="background:var(--primary-light);color:var(--primary)"><i class="fa-solid fa-folder-open"></i></div>
         </div>
-        <div class="card stat-card stat-card-success">
+        <div class="card stat-card">
           <div><div class="label">Sudah Diambil</div><div class="value" id="statTotalDiambil" style="color:var(--primary)">0</div></div>
           <div class="icon-box" style="background:#E3F6EA;color:var(--primary)"><i class="fa-solid fa-box-open"></i></div>
         </div>
-        <div class="card stat-card stat-card-warning">
+        <div class="card stat-card">
           <div><div class="label">Belum Diambil</div><div class="value" id="statBelumDiambil" style="color:var(--warning)">0</div></div>
           <div class="icon-box" style="background:#FEF1DE;color:var(--warning)"><i class="fa-solid fa-hourglass-half"></i></div>
         </div>
-        <div class="card stat-card stat-card-accent">
+        <div class="card stat-card">
           <div><div class="label">Total User</div><div class="value" id="statTotalUsers" style="color:var(--accent)">0</div></div>
           <div class="icon-box" style="background:#E7F1FC;color:var(--accent)"><i class="fa-solid fa-users"></i></div>
         </div>
@@ -243,18 +236,12 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
           <h3 style="margin:0;">Daftar User</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <div class="search-input-wrap">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" class="form-control" id="userSearchInput" placeholder="Cari nama user..." oninput="renderUserTable()">
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
-          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()"><i class="fa-solid fa-user-plus"></i> Tambah User</button>
         </div>
         <p class="text-muted" style="font-size:13px;margin:6px 0 14px;">Akun baru dibuat langsung dari sini (aman, lewat Edge Function — kunci rahasia tidak pernah ke browser).</p>
         <div class="table-responsive">
           <table>
-            <thead><tr><th>User</th><th>Role</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Nama</th><th>Username (Email)</th><th>Role</th><th>Aksi</th></tr></thead>
             <tbody id="userTableBody"></tbody>
           </table>
         </div>
@@ -264,13 +251,6 @@
     <!-- ===== LOG AKTIVITAS ===== -->
     <div class="page-section" id="page-logAktivitas">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-          <h3 style="margin:0;">Riwayat Aktivitas</h3>
-          <div class="search-input-wrap">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="form-control" id="logSearchInput" placeholder="Cari user atau aksi..." oninput="renderLogTable()">
-          </div>
-        </div>
         <div class="table-responsive">
           <table>
             <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Detail</th></tr></thead>
@@ -398,7 +378,7 @@
   </div>
 </div>
 
-<!-- ============ MODAL: USER (edit nama & role) ============ -->
+<!-- ============ MODAL: USER (edit lengkap) ============ -->
 <div class="modal-backdrop" id="userModal">
   <div class="modal-box">
     <div class="modal-header"><h3>Edit User</h3><button class="close-btn" onclick="closeModal('userModal')">&times;</button></div>
@@ -406,13 +386,18 @@
       <form id="userForm">
         <input type="hidden" id="userId">
         <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-control" id="userNama" required></div>
+        <div class="form-group"><label class="form-label">Username (Email)</label><input type="email" class="form-control" id="userEmail" required></div>
+        <div class="form-group">
+          <label class="form-label">Password Baru <small class="text-muted">(kosongkan jika tidak ingin ganti)</small></label>
+          <input type="password" class="form-control" id="userPasswordEdit" minlength="6" placeholder="Minimal 6 karakter">
+        </div>
         <div class="form-group"><label class="form-label">Role</label>
           <select class="form-select" id="userRole" required>
             <option value="Super Admin">Super Admin</option>
             <option value="Staff">Staff</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+        <button type="submit" class="btn btn-primary btn-block">Simpan Perubahan</button>
       </form>
     </div>
   </div>
